@@ -57,13 +57,17 @@ function KittyApi:spawn_kitty_window(
     hold_arg = "--hold"
   end
 
-  local split_mode_arg = "--location=vsplit"
+  local split_mode_arg = "vsplit"
 
   if split_mode == "h" then
-    split_mode_arg = "--location=split"
+    split_mode_arg = "hsplit"
   end
 
-  local kitty_command = {'kitten', '@', '--password='..self.rc_pass, 'launch', '--hold', split_mode_arg ,comm_arg, comm_args_arg,}
+  local kitty_command = {'kitten', '@', '--password='..self.rc_pass, 'launch', '--hold', '--location', split_mode_arg ,comm_arg, comm_args_arg,}
+
+  local vk = require("VKitty.vk.vk")
+
+  print(vim.inspect(kitty_command))
 
   local exec_result = vim.system(kitty_command, {text = true}):wait()
 
@@ -73,8 +77,6 @@ function KittyApi:spawn_kitty_window(
       "Stdout: "..exec_result.stdout,
       "Stderr: "..exec_result.stderr
   }
-
-  local vk = require("VKitty.vk.vk")
 
   if exec_result.stderr or not exec_result.stdout then
     vk.open_vk_dialog_window(kitty_command)

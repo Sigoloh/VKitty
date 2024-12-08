@@ -62,6 +62,35 @@ function M.setup()
         mode
       )
   end
+
+  ---Prompt user to enter a command to run in a split window
+  M.prompt_and_run_in_split = function ()
+    M.open_vk_prompt_window(
+      "Enter your command",
+      function(out)
+        local comm = out[1]
+
+        table.remove(out, 1)
+
+        M.run_command_in_new_window(comm, comm, out, "h")
+        return true
+      end,
+      {}
+    )
+  end
+
+  M.prompt_and_run_in_vsplit = function ()
+    M.open_vk_prompt_window(
+      "Enter your command",
+      function(out)
+        local comm= out[1]
+        table .remove(out, 1)
+        M.run_command_in_new_window(comm, comm, out, "v")
+        return true
+      end,
+      {}
+    )
+  end
   return M
 end
 

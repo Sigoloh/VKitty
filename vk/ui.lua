@@ -115,6 +115,10 @@ function VKittyUI:toggle_vk_window(win_opts, buf_ops, contents)
     return
   end
 
+  if not contents then
+    return
+  end
+
   win_opts = get_toggle_config(win_opts or {})
 
   if contents then
@@ -127,8 +131,8 @@ function VKittyUI:toggle_vk_window(win_opts, buf_ops, contents)
     end
   end
 
-  if buf_ops.buf_type == "prompt" then
-    win_opts.height_in_lines = #contents + 1
+  if buf_ops and buf_ops.buf_type == "prompt" then
+    win_opts.height_in_lines = 2
   end
 
   local vk_window_id, bufnr = self:_create_window(win_opts)

@@ -20,7 +20,7 @@ end
 ---|"acwrite" Buffer will always be written with BufWriteCmds
 ---|"help" Help buffer
 ---|"prompt" Buffer where only the last line can be edited
----@field prompt_call_back? fun(entries: string): boolean Required when buf_type=`prompt`. The returned value must be true in order to vim to delete the autocommand that passes this function as a callback
+---@field prompt_call_back? fun(entries: string[]): boolean Required when buf_type=`prompt`. The returned value must be true in order to vim to delete the autocommand that passes this function as a callback
 
 ---Get fullfilled VkBufferOptions
 ---@param config? VkBufferOptions
@@ -39,6 +39,7 @@ function Buffer.run_toggle_command()
   local vk = require("VKitty.vk.vk")
 
   vk.ui:toggle_vk_window()
+
   vim.api.nvim_input('<Esc>')
 end
 
@@ -59,8 +60,17 @@ local function map_close_window_keys(keys, bufnr)
 end
 
 ---@param lines string[]
+---@return string[]
 local function get_prompt_response(lines)
-  return lines[#lines]:gsub("󱞩 ", ""):gsub("󱞩", "")
+  local input_line = lines[#lines]:gsub("󱞩 ", ""):gsub("󱞩", "")
+
+  local split_comm = {}
+
+  for str in string.gmatch(input_line, '%S+') do
+    table.insert(split_comm, str)
+  end
+
+  return split_comm
 end
 
 
