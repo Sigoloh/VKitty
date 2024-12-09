@@ -30,6 +30,7 @@ local function get_vk_buffer_option(config)
     "force",
     {
       buf_type = "",
+      line_number = false
     },
     config or {}
   )
@@ -62,6 +63,10 @@ end
 ---@param lines string[]
 ---@return string[]
 local function get_prompt_response(lines)
+  if #lines == 0 then
+    return {}
+  end
+
   local input_line = lines[#lines]:gsub("󱞩 ", ""):gsub("󱞩", "")
 
   local split_comm = {}
@@ -110,7 +115,9 @@ function Buffer.set_options(bufnr, opts)
 end
 
 ---@param bufnr number
-function Buffer.setup_keymaps_and_autocommands(bufnr)
+---@param is_select? boolean Defines if it has to set the <Enter> as a select or just close
+---@param select_call_back? fun() Callback to call when enter is pressed. Only required when is_select is set to `true`
+function Buffer.setup_keymaps_and_autocommands(bufnr, is_select, select_call_back)
   if vim.api.nvim_buf_get_name(bufnr) == "" then
     vim.api.nvim_buf_set_name(bufnr, get_vk_window_name())
   end
@@ -119,7 +126,25 @@ function Buffer.setup_keymaps_and_autocommands(bufnr)
     buf = bufnr
   })
 
-  map_close_window_keys({"q", "<Esc>", "<CR>"}, bufnr)
+  map_close_window_keys({"q", "<Esc>"}, bufnr)
+
+  if is_select then
+
+    if not select_call_back then
+      error("VKitty: select_call_back is required when is_select is set to `true`")
+    end
+
+    map(
+      "n",
+      "<CR>",
+      function()
+        select_call_back()
+        Buffer.run_toggle_command()
+      end
+    )
+  else
+    map_close_window_keys({"<CR>"}, bufnr)
+  end
 
   vim.api.nvim_create_autocmd({ "BufLeave" },{
     buffer = bufnr,
@@ -153,7 +178,7 @@ function Buffer.set_contents(bufnr, contents)
 
   if contents then
     for _, c in pairs(contents or {}) do
-      for  w in string.gmatch(c, "[^\n]+") do
+      for w in string.gmatch(c, "[^\n]+") do
         table.insert(splited_content, w)
       end
     end

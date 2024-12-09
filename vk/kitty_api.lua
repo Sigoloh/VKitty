@@ -47,7 +47,7 @@ function KittyApi:spawn_kitty_window(
 
   local title_arg = "--title="..title
 
-  local cwd_arg = "--cwd="..(cwd or ".")
+  local cwd_arg = (cwd or "current")
 
   local env_arg = env and "--env="..(env) or "--copy-env"
 
@@ -63,11 +63,9 @@ function KittyApi:spawn_kitty_window(
     split_mode_arg = "hsplit"
   end
 
-  local kitty_command = {'kitten', '@', '--password='..self.rc_pass, 'launch', '--hold', '--location', split_mode_arg ,comm_arg, comm_args_arg,}
+  local kitty_command = {'kitten', '@', '--password='..self.rc_pass, 'launch', '--hold', '--cwd', cwd_arg,'--location', split_mode_arg, comm_arg, comm_args_arg,}
 
   local vk = require("VKitty.vk.vk")
-
-  print(vim.inspect(kitty_command))
 
   local exec_result = vim.system(kitty_command, {text = true}):wait()
 

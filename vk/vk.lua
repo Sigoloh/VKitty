@@ -16,21 +16,19 @@
 
 local M = {}
 
-local VKittyUI = require("VKitty.vk.ui")
+local VKittyData = require("VKitty.vk.data").VKittyData:new()
 
-local KittyApi = require("VKitty.vk.kitty_api")
 function M.setup()
-  M.ui = VKittyUI:new()
+  M.ui = require("VKitty.vk.ui"):new(VKittyData)
 
-  M.KApi = KittyApi:new()
+  M.KApi = require("VKitty.vk.kitty_api"):new()
 
   ---Uses VKittyUI.toggle_vk_window to open a prompt window
   ---@param prompt string The prompt to send to the buffer
   ---@param callback fun(entry: string[]): boolean A fuction that receivesThe returned value must be true in order to vim to delete the autocommand that passes this function as a callback
   ---@param win_opts? VkToggleOptions
   M.open_vk_prompt_window = function (prompt, callback, win_opts)
-    local buf_opts = {
-      buf_type="prompt",
+    local buf_opts = { buf_type="prompt",
       prompt_call_back = callback
     }
 
@@ -40,8 +38,9 @@ function M.setup()
   ---Uses VKittyUI.toggle_vk_window to open a dialog window
   ---@param content string[]
   ---@param win_opts? VkToggleOptions
-  M.open_vk_dialog_window =function(content, win_opts)
-    M.ui:toggle_vk_window(win_opts, {}, content)
+  ---@param buf_opts? VkBufferOptions
+  M.open_vk_dialog_window =function(content, win_opts, buf_opts)
+    M.ui:toggle_vk_window(win_opts, buf_opts or {}, content)
   end
 
   ---Runs some command in a new kitty window
@@ -84,13 +83,36 @@ function M.setup()
       "Enter your command",
       function(out)
         local comm= out[1]
-        table .remove(out, 1)
+        table.remove(out, 1)
         M.run_command_in_new_window(comm, comm, out, "v")
         return true
       end,
       {}
     )
   end
+
+  -- Create a new alias 
+  -- <alias_name> <alias_command>
+
+  M.create_new_fast_command = function()
+    M.open_vk_prompt_window(
+      "Create a new alias",
+      function(out)
+        local alias_name = out[1]
+        table.remove(out, 1)
+        VKittyData:update(alias_name, out)
+        VKittyData:sync()
+
+        return true
+      end,
+      {}
+    )
+  end
+
+  M.get_aliases = function()
+    M.ui:toggle_kick_menu()
+  end
+
   return M
 end
 
